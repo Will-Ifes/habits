@@ -1,3 +1,5 @@
+import { browserApi, isBrowserMode } from './browser-api'
+
 export type Habit = {
   id: string
   title: string
@@ -8,6 +10,7 @@ export type Day = { possibleHabits: Habit[]; completedHabits: string[] }
 export type SummaryDay = { date: string; amount: number; completed: number }
 
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
+  if (isBrowserMode) return browserApi<T>(path, options)
   const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}${path}`, {
     ...options,
     headers: {

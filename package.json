@@ -21,9 +21,13 @@
     "check": "npm test && npm run build",
     "start": "npm run start -w @habits/server",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:pages": "npm run build:pages -w @habits/web",
+    "preview:pages": "npm run preview:pages -w @habits/web",
+    "test:pages": "playwright test -c playwright.pages.config.ts"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.56.0",
     "concurrently": "^9.2.1",
     "prettier": "^3.9.10"

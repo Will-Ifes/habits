@@ -1,0 +1,78 @@
+/* Will Labs foundations: https://github.com/Will-Ifes/will-labs/blob/main/packages/tokens/themes.json */
+:root {
+  --wl-font: 'Roboto', system-ui, sans-serif;
+  --wl-font-mono: 'Roboto Mono', ui-monospace, monospace;
+  --wl-space-1: 4px;
+  --wl-space-2: 8px;
+  --wl-space-3: 12px;
+  --wl-space-4: 16px;
+  --wl-space-6: 24px;
+  --wl-space-8: 32px;
+  --wl-radius-control: 8px;
+  --wl-radius-surface: 16px;
+  --wl-control: 40px;
+}
+:root,
+:root[data-tema='paper'] {
+  color-scheme: light;
+  --wl-bg: #faf8f2;
+  --wl-surface: #faf8f2;
+  --wl-muted: #efe8dc;
+  --wl-text: #1c251e;
+  --wl-secondary: #5c665d;
+  --wl-border: #748472;
+  --wl-line: #d6d4c6;
+  --wl-accent: #3e5c3b;
+  --wl-hover: #2d462e;
+  --wl-on: #fff;
+  --wl-danger: #a32929;
+  --wl-danger-bg: #f9e7e0;
+  --wl-warning: #765000;
+  --wl-success: #11702e;
+  --wl-success-bg: #e3ecdd;
+  --wl-overlay: #101d16b8;
+  --wl-shadow: 0 8px 28px #1c251e12;
+  --wl-level-0: #efe8dc;
+  --wl-level-1: #dce3d3;
+  --wl-level-2: #b4c9a9;
+  --wl-level-3: #77936d;
+  --wl-level-4: #3e5c3b;
+  --wl-level-text-1: #1c251e;
+  --wl-level-text-2: #1c251e;
+  --wl-level-text-3: #102012;
+  --wl-level-text-4: #fff;
+}
+:root[data-tema='forest'] {
+  color-scheme: dark;
+  --wl-bg: #101d16;
+  --wl-surface: #192c20;
+  --wl-muted: #253c2c;
+  --wl-text: #f1f5ea;
+  --wl-secondary: #c0ceba;
+  --wl-border: #809c82;
+  --wl-line: #3b5742;
+  --wl-accent: #b9dba8;
+  --wl-hover: #d4ecc8;
+  --wl-on: #15251b;
+  --wl-danger: #ffb4a9;
+  --wl-danger-bg: #442c28;
+  --wl-warning: #f5d085;
+  --wl-success: #6fe0d8;
+  --wl-success-bg: #203d2e;
+  --wl-overlay: #050c08c9;
+  --wl-shadow: 0 8px 28px #0003;
+  --wl-level-0: #253c2c;
+  --wl-level-1: #35503a;
+  --wl-level-2: #52724b;
+  --wl-level-3: #82a86f;
+  --wl-level-4: #b9dba8;
+  --wl-level-text-1: #f1f5ea;
+  --wl-level-text-2: #fff;
+  --wl-level-text-3: #15251b;
+  --wl-level-text-4: #15251b;
+}
+@media (pointer: coarse) {
+  :root {
+    --wl-control: 44px;
+  }
+}

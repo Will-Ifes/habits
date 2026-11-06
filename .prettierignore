@@ -1,6 +1,8 @@
 node_modules/
+.tools/
 package-lock.json
 dist/
+dist-pages/
 setup/aulas/server/src/generated/
 setup/aulas/server/prisma/migrations/
 **/*.svg

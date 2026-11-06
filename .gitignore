@@ -1,5 +1,7 @@
 node_modules/
+.tools/
 dist/
+dist-pages/
 .env
 .env.*
 !.env.example

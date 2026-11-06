@@ -6,13 +6,16 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:pages": "tsc --noEmit && vite build --mode pages",
+    "preview:pages": "vite preview --mode pages --port 4174 --strictPort --host 127.0.0.1"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
     "phosphor-react": "^1.4.1",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",

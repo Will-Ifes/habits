@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as Dialog from '@radix-ui/react-dialog'
 import {
   ArrowRight,
@@ -15,18 +15,26 @@ import {
   Target,
   Trash,
   X,
+  Sun,
+  Moon,
 } from 'phosphor-react'
 import { api, Day, errorMessage, Habit, SummaryDay } from './lib/api'
 import { addDays, formatDate, weekDays } from './utils/dates'
 import { HabitForm } from './components/HabitForm'
 import { Calendar } from './components/Calendar'
 import { History } from './components/History'
+import { BackupControls } from './components/BackupControls'
+import { isBrowserMode, STORAGE_KEY } from './lib/browser-api'
+import { useTheme } from './hooks/useTheme'
+import './styles/tokens.css'
 import './styles/global.css'
 
 type Snapshot = { today: string; date: string; day: Day; habits: Habit[]; summary: SummaryDay[] }
 type Modal = { kind: 'create' } | { kind: 'rename' | 'delete'; habit: Habit } | null
 
 export function App() {
+  const modalTrigger = useRef<HTMLElement | null>(null)
+  const { theme, toggle } = useTheme()
   const [today, setToday] = useState('')
   const [selected, setSelected] = useState('')
   const [month, setMonth] = useState('')
@@ -38,6 +46,12 @@ export function App() {
   const [notice, setNotice] = useState('')
   const [modal, setModal] = useState<Modal>(null)
   const year = Number(month.slice(0, 4))
+
+  function openModal(value: Modal) {
+    modalTrigger.current =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null
+    setModal(value)
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -75,7 +89,14 @@ export function App() {
   useEffect(() => {
     const refresh = () => setRevision((value) => value + 1)
     window.addEventListener('focus', refresh)
-    return () => window.removeEventListener('focus', refresh)
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_KEY || event.key === null) refresh()
+    }
+    window.addEventListener('storage', onStorage)
+    return () => {
+      window.removeEventListener('focus', refresh)
+      window.removeEventListener('storage', onStorage)
+    }
   }, [])
   useEffect(() => {
     if (!notice) return
@@ -153,8 +174,11 @@ export function App() {
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#conteudo">
+        Pular para o conteúdo
+      </a>
       <header className="topbar">
-        <a className="brand" href="/" aria-label="Habits, início">
+        <a className="brand" href={import.meta.env.BASE_URL} aria-label="Habits, início">
           <span className="brand-mark">
             <Check size={24} weight="bold" />
           </span>
@@ -168,12 +192,22 @@ export function App() {
             Histórico <ArrowUpRight size={13} />
           </a>
         </nav>
-        <span className="personal-badge">
-          <span /> Espaço pessoal
-        </span>
+        <div className="header-actions">
+          <span className="personal-badge">
+            <span /> Will Labs
+          </span>
+          <button
+            className="theme-toggle"
+            onClick={toggle}
+            aria-label={theme === 'paper' ? 'Usar tema Floresta' : 'Usar tema Papel'}
+          >
+            {theme === 'paper' ? <Moon size={18} /> : <Sun size={18} />}
+            <span>{theme === 'paper' ? 'Papel' : 'Floresta'}</span>
+          </button>
+        </div>
       </header>
 
-      <main>
+      <main id="conteudo" tabIndex={-1}>
         <section className="hero">
           <div>
             <span className="eyebrow accent">
@@ -189,10 +223,17 @@ export function App() {
               <br className="mobile-break" /> Só continuar, um dia de cada vez.
             </p>
           </div>
-          <button className="button primary" onClick={() => setModal({ kind: 'create' })}>
+          <button className="button primary" onClick={() => openModal({ kind: 'create' })}>
             <Plus size={20} weight="bold" /> Novo hábito
           </button>
         </section>
+
+        {isBrowserMode && (
+          <BackupControls
+            disabled={busy}
+            onUpdated={() => saved('Backup restaurado. Sua rotina está pronta.')}
+          />
+        )}
 
         {notice && (
           <div role="status" className="notice">
@@ -323,7 +364,7 @@ export function App() {
                             {checked && <Check size={17} weight="bold" />}
                           </span>
                           <span className="habit-row-title">
-                            {habit.title}
+                            <span className="habit-title-text">{habit.title}</span>
                             <small>
                               {checked ? 'Você fez acontecer' : 'Um pequeno passo para hoje'}
                             </small>
@@ -349,7 +390,7 @@ export function App() {
                         : 'Escolha algo pequeno que você quer fazer por você. Seu primeiro hábito começa aqui.'}
                     </p>
                     {!data.habits.length && (
-                      <button className="text-button" onClick={() => setModal({ kind: 'create' })}>
+                      <button className="text-button" onClick={() => openModal({ kind: 'create' })}>
                         Criar meu primeiro hábito <ArrowRight size={16} />
                       </button>
                     )}
@@ -420,14 +461,14 @@ export function App() {
                           <button
                             className="icon-button"
                             aria-label={`Renomear ${habit.title}`}
-                            onClick={() => setModal({ kind: 'rename', habit })}
+                            onClick={() => openModal({ kind: 'rename', habit })}
                           >
                             <PencilSimple size={18} />
                           </button>
                           <button
                             className="icon-button danger"
                             aria-label={`Excluir ${habit.title}`}
-                            onClick={() => setModal({ kind: 'delete', habit })}
+                            onClick={() => openModal({ kind: 'delete', habit })}
                           >
                             <Trash size={18} />
                           </button>
@@ -463,6 +504,10 @@ export function App() {
           <Dialog.Overlay className="dialog-overlay" />
           <Dialog.Content
             className="dialog-content"
+            onCloseAutoFocus={(event) => {
+              event.preventDefault()
+              modalTrigger.current?.focus()
+            }}
             onEscapeKeyDown={(event) => {
               if (busy) event.preventDefault()
             }}
