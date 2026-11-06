@@ -1,127 +1,52 @@
-import { PrismaClient } from '@prisma/client'
+import 'dotenv/config'
+import { createDatabase } from '../src/lib/database'
+import { asDate, asKey, todayKey } from '../src/dates'
 
-const prisma = new PrismaClient()
-
-const firstHabitId = '0730ffac-d039-4194-9571-01aa2aa0efbd'
-const firstHabitCreationDate = new Date('2022-12-31T03:00:00.000')
-
-const secondHabitId = '00880d75-a933-4fef-94ab-e05744435297'
-const secondHabitCreationDate = new Date('2023-01-03T03:00:00.000')
-
-const thirdHabitId = 'fa1a1bcf-3d87-4626-8c0d-d7fd1255ac00'
-const thirdHabitCreationDate = new Date('2023-01-08T03:00:00.000')
-
-async function run() {
-  await prisma.habit.deleteMany()
-  await prisma.day.deleteMany()
-
-  /**
-   * Create habits
-   */
-  await Promise.all([
-    prisma.habit.create({
+const db = createDatabase()
+const samples = [
+  {
+    id: '0730ffac-d039-4194-9571-01aa2aa0efbd',
+    title: 'Ler por 20 minutos',
+    days: [0, 1, 2, 3, 4, 5, 6],
+  },
+  {
+    id: '00880d75-a933-4fef-94ab-e05744435297',
+    title: 'Movimentar o corpo',
+    days: [1, 2, 3, 4, 5],
+  },
+  {
+    id: 'fa1a1bcf-3d87-4626-8c0d-d7fd1255ac00',
+    title: 'Beber 2 litros de água',
+    days: [0, 1, 2, 3, 4, 5, 6],
+  },
+]
+async function seed() {
+  const today = asDate(todayKey())
+  const start = new Date(today.getTime() - 60 * 86400000)
+  for (const sample of samples) {
+    // Existing habits and their history are never reset by the demo seed.
+    if (await db.habit.findUnique({ where: { id: sample.id } })) continue
+    await db.habit.create({
       data: {
-        id: firstHabitId,
-        title: 'Ler a bíblia',
-        created_at: firstHabitCreationDate,
-        weekDays: {
-          create: [
-            { week_day: 1 },
-            { week_day: 2 },
-            { week_day: 3 },
-          ]
-        }
-      }
-    }),
-
-    prisma.habit.create({
-      data: {
-        id: secondHabitId,
-        title: 'Exercitar',
-        created_at: secondHabitCreationDate,
-        weekDays: {
-          create: [
-            { week_day: 3 },
-            { week_day: 4 },
-            { week_day: 5 },
-          ]
-        }
-      }
-    }),
-
-    prisma.habit.create({
-      data: {
-        id: thirdHabitId,
-        title: 'Dormir 8h',
-        created_at: thirdHabitCreationDate,
-        weekDays: {
-          create: [
-            { week_day: 1 },
-            { week_day: 2 },
-            { week_day: 3 },
-            { week_day: 4 },
-            { week_day: 5 },
-          ]
-        }
-      }
+        id: sample.id,
+        title: sample.title,
+        created_at: start,
+        weekDays: { create: sample.days.map((week_day) => ({ week_day })) },
+      },
     })
-  ])
-
-  await Promise.all([
-    /**
-     * Habits (Complete/Available): 1/1
-     */
-    prisma.day.create({
-      data: {
-        /** Monday */
-        date: new Date('2023-01-02T03:00:00.000z'),
-        dayHabits: {
-          create: {
-            habit_id: firstHabitId,
-          }
-        }
-      }
-    }),
-
-    /**
-     * Habits (Complete/Available): 1/1
-     */
-    prisma.day.create({
-      data: {
-        /** Friday */
-        date: new Date('2023-01-06T03:00:00.000z'),
-        dayHabits: {
-          create: {
-            habit_id: firstHabitId,
-          }
-        }
-      }
-    }),
-
-    /**
-     * Habits (Complete/Available): 2/2
-     */
-    prisma.day.create({
-      data: {
-        /** Wednesday */
-        date: new Date('2023-01-04T03:00:00.000z'),
-        dayHabits: {
-          create: [
-            { habit_id: firstHabitId },
-            { habit_id: secondHabitId },
-          ]
-        }
-      }
-    }),
-  ])
+    for (let index = 0; index < 60; index++) {
+      const date = new Date(start.getTime() + index * 86400000)
+      if (!sample.days.includes(date.getUTCDay()) || (index + samples.indexOf(sample)) % 7 === 0)
+        continue
+      const day = await db.day.upsert({ where: { date }, update: {}, create: { date } })
+      await db.dayHabit.create({ data: { day_id: day.id, habit_id: sample.id } })
+    }
+  }
+  console.log(`Demonstração pronta até ${asKey(today)}. Seus hábitos existentes foram preservados.`)
 }
-
-run()
-  .then(async () => {
-    await prisma.$disconnect()
+seed()
+  .catch((error) => {
+    console.error(error)
+    process.exitCode = 1
   })
-  .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+  .finally(() => db.$disconnect())

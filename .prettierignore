@@ -1,0 +1,11 @@
+node_modules/
+package-lock.json
+dist/
+setup/aulas/server/src/generated/
+setup/aulas/server/prisma/migrations/
+**/*.svg
+**/*.db
+**/*.png
+**/*.log
+test-results/
+playwright-report/

@@ -1,5 +1,3 @@
-import { PrismaClient } from '@prisma/client'
-
-export const prisma = new PrismaClient({
-    log: ['query']
-})
+import 'dotenv/config'
+import { createDatabase } from './database'
+export const prisma = createDatabase()

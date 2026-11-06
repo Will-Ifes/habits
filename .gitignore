@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.db-journal
+*.db-wal
+*.db-shm
+habits.db
+test-*.db
+*.tsbuildinfo
+playwright-report/
+test-results/
+*.log
+setup/aulas/server/src/generated/
